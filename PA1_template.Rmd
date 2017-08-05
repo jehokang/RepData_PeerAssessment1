@@ -1,25 +1,55 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+output: html_document
+keep_md: true
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 ## Loading and preprocessing the data
-
-
+```{r, echo=TRUE}
+act <- read.csv("activity.csv")
+act$date <- as.Date(act$date)
+```
 
 ## What is mean total number of steps taken per day?
+```{r, echo=TRUE}
+plot(aggregate(steps ~ date, data = act, sum, na.rm = TRUE), type = "h", main = "Total Number of steps per Day")
+aggregate(steps ~ date, data = act, mean, na.rm = TRUE)
+aggregate(steps ~ date, data = act, median, na.rm = TRUE)
 
-
-
+```
 ## What is the average daily activity pattern?
+```{r, echo=TRUE}
+plot(aggregate(steps ~ interval, data = act, mean, na.rm = TRUE), type = "l", main = "Average Steps per Intervals")
+
+aggact <- aggregate(steps ~ interval, data = act, mean, na.rm = TRUE)
+subset(aggact, aggact$steps == max(aggact[,2]))
 
 
+```
 
 ## Imputing missing values
+```{r, echo=TRUE}
+sum(is.na(act$steps))
+
+act$steps[is.na(act$steps)] <- aggact$steps[match(act$interval,aggact$interval)][which(is.na(act$steps))]
+
+plot(aggregate(steps ~ date, data = act, sum, na.rm = TRUE), type = "h", main = "Total Number of steps per Day")
+aggregate(steps ~ date, data = act, mean, na.rm = TRUE)
+aggregate(steps ~ date, data = act, median, na.rm = TRUE)
 
 
-
+```
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r, echo=TRUE}
+act <- cbind(act, week = factor(ifelse(weekdays(act$date) %in% c("Saturday", "Sunday"), "weekend", "weekday")))
+
+library(ggplot2)
+g <- ggplot(act, aes(interval,steps))
+g + geom_line() + facet_grid(week ~ .)
+
+```
+
