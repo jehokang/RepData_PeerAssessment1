@@ -1,6 +1,8 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 keep_md: true
 ---
 
@@ -9,41 +11,78 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Loading and preprocessing the data
+
+Load the dataset and convert data type to Date for date column for further analysis.
 ```{r, echo=TRUE}
 act <- read.csv("activity.csv")
 act$date <- as.Date(act$date)
 ```
 
 ## What is mean total number of steps taken per day?
+
+Histogram of the total number of steps taken each day
 ```{r, echo=TRUE}
 plot(aggregate(steps ~ date, data = act, sum, na.rm = TRUE), type = "h", main = "Total Number of steps per Day")
+```
+
+Following is the mean and median values of the total number of steps.
+```{r, echo=TRUE}
+mean(act$steps,na.rm = TRUE)
+median(act$steps,na.rm = TRUE)
+```
+
+And, following is showing each mean and median stpes values per each day.
+```{r, echo=TRUE}
 aggregate(steps ~ date, data = act, mean, na.rm = TRUE)
 aggregate(steps ~ date, data = act, median, na.rm = TRUE)
-
 ```
+
 ## What is the average daily activity pattern?
+
+Time series plot of the 5 minutes interval and the average number of steps taken, averaged across all days.
 ```{r, echo=TRUE}
 plot(aggregate(steps ~ interval, data = act, mean, na.rm = TRUE), type = "l", main = "Average Steps per Intervals")
+```
 
+Following is showing what interval contains the maximum number of steps.
+```{r, echo=TRUE}
 aggact <- aggregate(steps ~ interval, data = act, mean, na.rm = TRUE)
 subset(aggact, aggact$steps == max(aggact[,2]))
-
-
 ```
 
 ## Imputing missing values
+
+How many missing values?
 ```{r, echo=TRUE}
 sum(is.na(act$steps))
+```
 
+The missing values are filling with the mean values per interval across all days.
+```{r, echo=TRUE}
 act$steps[is.na(act$steps)] <- aggact$steps[match(act$interval,aggact$interval)][which(is.na(act$steps))]
 
+```
+
+Histogram of the total number of steps taken each day after filling the missing values.
+```{r, echo=TRUE}
 plot(aggregate(steps ~ date, data = act, sum, na.rm = TRUE), type = "h", main = "Total Number of steps per Day")
+```
+
+Following is the mean and median values of the total number of steps after filling the missing values.
+```{r, echo=TRUE}
+mean(act$steps,na.rm = TRUE)
+median(act$steps,na.rm = TRUE)
+```
+
+And, following is showing each mean and median stpes values per each day after filling the missing values.
+```{r, echo=TRUE}
 aggregate(steps ~ date, data = act, mean, na.rm = TRUE)
 aggregate(steps ~ date, data = act, median, na.rm = TRUE)
-
-
 ```
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days.
 ```{r, echo=TRUE}
 act <- cbind(act, week = factor(ifelse(weekdays(act$date) %in% c("Saturday", "Sunday"), "weekend", "weekday")))
 
